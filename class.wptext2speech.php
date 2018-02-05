@@ -10,6 +10,14 @@ class wpText2speech{
 		//add menu page
 		add_action( 'admin_menu', array( $this, 'admin_menu_page' ) );
 		add_action( 'admin_init', array( $this, 'wpText2speech_settings' ) );
+
+		//enqueue script
+		add_action( 'wp_enqueue_scripts', array( $this, 'wpText2speech_script'), 0 );
+
+		//ajax capture
+		add_action( 'wp_ajax_wpT2S', array( $this, 'ajax_wpT2S' ) );
+		add_action( 'wp_ajax_nopriv_wpT2S',array( $this,  'ajax_wpT2S' ) );
+
 	}
 	
 	public function admin_menu_page(){
@@ -94,4 +102,21 @@ class wpText2speech{
         );
     }
 
+	public function wpText2speech_script(){
+		
+		//get options
+		$this->options = get_option( 'wpT2S_options' );
+
+		wp_register_script( 'wpT2S-js', plugin_dir_url( __FILE__ ) . '/js/wpT2S.js', array('jquery'), "0.1", true);	
+		wp_localize_script( 'wpT2S-js', 'wpT2S_ajaxURL', admin_url( 'admin-ajax.php' ));
+		wp_localize_script( 'wpT2S-js', 'wpT2S_content_class_selector', $this->options['wpT2S_Selector']);
+		wp_enqueue_script( 'wpT2S-js' );
+
+	}
+
+	public function ajax_wpT2S() {
+		
+		wp_send_json(__("text2speech_empty_text","wpT2S"));
+
+	}
 }//end class
