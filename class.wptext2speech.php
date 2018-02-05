@@ -6,6 +6,7 @@ class wpText2speech{
 		
 		$this->menuPageTitle = "wpText2speech Options";
 		$this->menuPageLabel = "wpT2S Options";
+		$this->folderName	 = "wpT2S";
 		
 		//add menu page
 		add_action( 'admin_menu', array( $this, 'admin_menu_page' ) );
@@ -105,18 +106,59 @@ class wpText2speech{
 	public function wpText2speech_script(){
 		
 		//get options
-		$this->options = get_option( 'wpT2S_options' );
+		$options = get_option( 'wpT2S_options' );
 
 		wp_register_script( 'wpT2S-js', plugin_dir_url( __FILE__ ) . '/js/wpT2S.js', array('jquery'), "0.1", true);	
 		wp_localize_script( 'wpT2S-js', 'wpT2S_ajaxURL', admin_url( 'admin-ajax.php' ));
-		wp_localize_script( 'wpT2S-js', 'wpT2S_content_class_selector', $this->options['wpT2S_Selector']);
+		wp_localize_script( 'wpT2S-js', 'wpT2S_content_class_selector', $options['wpT2S_Selector']);
 		wp_enqueue_script( 'wpT2S-js' );
 
 	}
 
 	public function ajax_wpT2S() {
-		
-		wp_send_json(__("text2speech_empty_text","wpT2S"));
 
+		//get options
+		$options = get_option( 'wpT2S_options' );
+
+		if( isset($_POST["text"]) && $_POST["text"] != ""){
+	
+			$text 		= urlencode( $_POST["text"] );
+			$fileName 	= md5($text) . ".mp3";
+			$pathFile	= get_template_directory() . DIRECTORY_SEPARATOR . $this->folderName . DIRECTORY_SEPARATOR . $fileName;
+			
+		
+
+
+			//is file exist
+			if( file_exists($pathFile) ){
+				//return file url
+				wp_send_json( array( "url" => get_template_directory_uri() . DIRECTORY_SEPARATOR . $this->folderName . DIRECTORY_SEPARATOR . $fileName ) );
+			}else{
+				
+				//lang
+				$lang = "fr-FR";
+				//construct file
+				$url = $options["wpT2S_API_Point"] . "?accept=audio%2Fmp3&voice=" . $lang . "_ReneeVoice&text=" . $text;
+				//call mp3
+				$result = file_get_contents( $url );
+
+				//check dir adn try to create dir
+				try{
+					mkdir( dirname( $pathFile ), 0777);
+				}catch(Exception $e){
+					//error to create dir
+				}
+
+				//write file
+				if( file_put_contents($pathFile, $result) ){
+					wp_send_json( array( "url" => get_template_directory_uri() . DIRECTORY_SEPARATOR . $this->folderName . DIRECTORY_SEPARATOR . $fileName ) );
+				}else{
+					wp_send_json(__("text2speech_error_writing_file","wpT2S"));
+				}
+			}
+			
+		}else{
+			wp_send_json(__("text2speech_empty_text","wpT2S"));
+		}
 	}
 }//end class
