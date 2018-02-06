@@ -1,13 +1,10 @@
-console.log( wpT2S_ajaxURL );
-console.log(wpT2S_content_class_selector);
 
-/*
-jQuery(function ( $ ) { 
-	var list_wpT2S_content = $("." + wpT2S_content_class_selector);	
-	if(list_wpT2S_content.length > 0){ 
-
-	}
-});*/
+// debug for iOS
+var isSafari = /constructor/i.test(window.HTMLElement) || (function (p) { return p.toString() === "[object SafariRemoteNotification]"; })(!window['safari'] || (typeof safari !== 'undefined' && safari.pushNotification));
+var ua = navigator.userAgent.toLowerCase(); 
+if (isSafari == false && ua.indexOf('safari') != -1) { 
+	isSafari = true;
+}
 
 (function($){
 
@@ -52,10 +49,16 @@ jQuery(function ( $ ) {
 					success: function (response) {
 						if (response.url != undefined && response.url != "") {
 
-							audio = new Audio(response.url);
+							audio = new Audio( response.url );
 							audio.controls = false;
-							audio.play();
-							$(el).removeClass("wpT2S_Icon_Base").addClass("wpT2S_Icon_Pause");
+	
+							if( isSafari ){
+								audio.pause();
+								$(el).removeClass("wpT2S_Icon_Base").addClass("wpT2S_Icon_Play");
+							}else{
+								audio.play();
+								$(el).removeClass("wpT2S_Icon_Base").addClass("wpT2S_Icon_Pause");
+							}
 
 						}
 					}
