@@ -33,10 +33,15 @@ class wpText2speech{
 
 			//generate css
 			$css = "";
-			$css .= ".wpT2S_Icon_Base{background: url(" . $value["wpT2S_Icon_Base"] . ");}";
-			$css .= ".wpT2S_Icon_Loading{background: url(" . $value["wpT2S_Icon_Loading"] . ");}";
-			$css .= ".wpT2S_Icon_Play{background: url(" . $value["wpT2S_Icon_Play"] . ");}";
-			$css .= ".wpT2S_Icon_Pause{background: url(" . $value["wpT2S_Icon_Pause"] . ");}";
+			$css .= ".wpT2S_Icon_Base{background: url(" . $value["wpT2S_Icon_Base"] . ") transparent no-repeat;}";
+			$css .= ".wpT2S_Icon_Loading{background: url(" . $value["wpT2S_Icon_Loading"] . ") transparent no-repeat;}";
+			$css .= ".wpT2S_Icon_Play{background: url(" . $value["wpT2S_Icon_Play"] . ") transparent no-repeat;}";
+			$css .= ".wpT2S_Icon_Pause{background: url(" . $value["wpT2S_Icon_Pause"] . ") transparent no-repeat;}";
+
+			//general css
+			$css .= ".titleT2S{ position:relative; }";
+			$css .= ".titleT2S .playerT2S{ width:50px; height:50px; padding-right:60px; cursor: pointer; position: absolute; right: 0; top: 0; display: block;}"; //calcule dynamic size of icon
+
 
 			//test if dir exist
 			if( !is_dir( $this->cssPathFile ) ){
