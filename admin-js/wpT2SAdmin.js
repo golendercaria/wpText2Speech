@@ -8,7 +8,7 @@ jQuery(document).ready(function ($) {
         return false;
 	});
 	
-	window.send_to_editor = function(html) {
+	window.send_to_editor = function (html) {
 		$(current_ico).val( $(html).attr("src") );
 		tb_remove();
 	}

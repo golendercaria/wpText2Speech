@@ -4,10 +4,12 @@ class wpText2speech{
 	
 	public function __construct(){
 		
-		$this->menuPageTitle = "wpText2speech Options";
-		$this->menuPageLabel = "wpT2S Options";
-		$this->folderName	 = "wpT2S";
-		
+		$this->menuPageTitle 	= "wpText2speech Options";
+		$this->menuPageLabel 	= "wpT2S Options";
+		$this->folderName	 	= "wpT2S";
+		$this->cssPathFile   	= dirname( __FILE__ ) . DIRECTORY_SEPARATOR . "css";
+		$this->cssPathFileName  = "wpT2S_dynamic.css";
+
 		//add menu page
 		add_action( 'admin_menu', array( $this, 'admin_menu_page' ) );
 		add_action( 'admin_init', array( $this, 'wpText2speech_settings' ) );
@@ -23,18 +25,53 @@ class wpText2speech{
 		add_action('admin_enqueue_scripts', array( $this, 'wpText2speech_options_enqueue_scripts' ) );
 
 		//hook for save icon
-		//add_action('update_option', array( $this, 'wpText2speech_save_options' ), 10, 3 );
+		add_action('update_option', array( $this, 'wpText2speech_save_options' ), 10, 3 );
 	}
 
 	public function wpText2speech_save_options( $option, $old_value, $value ){
 		if( $option == "wpT2S_options" ){
 
-			echo "<pre>";
-			print_r($option);
-			print_r($old_value);
-			print_r($value);
-			echo "</pre>";
-			die();
+			//generate css
+			$css = "";
+			$css .= ".wpT2S_Icon_Base{background: url(" . $value["wpT2S_Icon_Base"] . ");}";
+			$css .= ".wpT2S_Icon_Loading{background: url(" . $value["wpT2S_Icon_Loading"] . ");}";
+			$css .= ".wpT2S_Icon_Play{background: url(" . $value["wpT2S_Icon_Play"] . ");}";
+			$css .= ".wpT2S_Icon_Pause{background: url(" . $value["wpT2S_Icon_Pause"] . ");}";
+
+			//test if dir exist
+			if( !is_dir( $this->cssPathFile ) ){
+				try{
+					mkdir( $this->cssPathFile, 0777);
+				}catch(Exception $e){
+					//error to create dir
+					echo $e;
+				}
+			}
+
+			//test if file exist
+			if( !file_exists( $this->cssPathFile . DIRECTORY_SEPARATOR . $this->cssPathFileName ) ){
+				try{
+					$file = fopen( $this->cssPathFile . DIRECTORY_SEPARATOR . $this->cssPathFileName, "w");
+				}catch(Exception $e){
+					//error open file
+					echo $e;
+				}
+			}else{
+				try{
+					$file = fopen( $this->cssPathFile . DIRECTORY_SEPARATOR . $this->cssPathFileName, "r+");
+				}catch(Exception $e){
+					//error open file
+					echo $e;
+				}
+			}
+
+			//erase file
+			ftruncate($file, 0);
+			rewind($file);
+
+			//write file
+			fputs($file, $css);
+			fclose($file);
 		}
 	}
 
@@ -167,8 +204,9 @@ class wpText2speech{
 	
 	public function field_icon_base(){
         printf(
-			'<input type="text" id="wpT2S_Icon_Base" name="wpT2S_options[wpT2S_Icon_Base]" value="%s" />
-			<input class="upload_icon_button" type="button" class="button" value="' . __( 'Upload Icon', 'wpT2S' ) . '" />',
+			'<input type="text" id="wpT2S_Icon_Base" name="wpT2S_options[wpT2S_Icon_Base]" value="%1$s" />
+			<input class="upload_icon_button" type="button" class="button" value="' . __( 'Upload Icon', 'wpT2S' ) . '" />
+			<img src="%1$s" alt="" />',
 			isset( $this->options['wpT2S_Icon_Base'] ) ? esc_url( $this->options['wpT2S_Icon_Base'] ) : '' 
 		);
 	}
@@ -176,7 +214,8 @@ class wpText2speech{
 	public function field_icon_loading(){
         printf(
 			'<input type="text" id="wpT2S_Icon_Loading" name="wpT2S_options[wpT2S_Icon_Loading]" value="%s" />
-			<input class="upload_icon_button" type="button" class="button" value="' . __( 'Upload Icon', 'wpT2S' ) . '" />',
+			<input class="upload_icon_button" type="button" class="button" value="' . __( 'Upload Icon', 'wpT2S' ) . '" />
+			<img src="%1$s" alt="" />',
 			isset( $this->options['wpT2S_Icon_Loading'] ) ? esc_url( $this->options['wpT2S_Icon_Loading'] ) : '' 
 		);
 	}
@@ -184,7 +223,8 @@ class wpText2speech{
 	public function field_icon_play(){
         printf(
 			'<input type="text" id="wpT2S_Icon_Play" name="wpT2S_options[wpT2S_Icon_Play]" value="%s" />
-			<input class="upload_icon_button" type="button" class="button" value="' . __( 'Upload Icon', 'wpT2S' ) . '" />',
+			<input class="upload_icon_button" type="button" class="button" value="' . __( 'Upload Icon', 'wpT2S' ) . '" />
+			<img src="%1$s" alt="" />',
 			isset( $this->options['wpT2S_Icon_Play'] ) ? esc_url( $this->options['wpT2S_Icon_Play'] ) : '' 
 		);
 	}
@@ -192,7 +232,8 @@ class wpText2speech{
 	public function field_icon_pause(){
         printf(
 			'<input type="text" id="wpT2S_Icon_Pause" name="wpT2S_options[wpT2S_Icon_Pause]" value="%s" />
-			<input class="upload_icon_button" type="button" class="button" value="' . __( 'Upload Icon', 'wpT2S' ) . '" />',
+			<input class="upload_icon_button" type="button" class="button" value="' . __( 'Upload Icon', 'wpT2S' ) . '" />
+			<img src="%1$s" alt="" />',
 			isset( $this->options['wpT2S_Icon_Pause'] ) ? esc_url( $this->options['wpT2S_Icon_Pause'] ) : '' 
 		);
 	}
@@ -230,9 +271,6 @@ class wpText2speech{
 			$text 		= urlencode( $_POST["text"] );
 			$fileName 	= md5($text) . ".mp3";
 			$pathFile	= get_template_directory() . DIRECTORY_SEPARATOR . $this->folderName . DIRECTORY_SEPARATOR . $fileName;
-			
-		
-
 
 			//is file exist
 			if( file_exists($pathFile) ){
