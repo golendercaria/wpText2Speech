@@ -248,6 +248,11 @@ class wpText2speech{
 		wp_localize_script( 'wpT2S-js', 'wpT2S_content_class_selector', $options['wpT2S_Selector']);
 		wp_enqueue_script( 'wpT2S-js' );
 
+		//load dynamique css
+		if( file_exists( $this->cssPathFile . DIRECTORY_SEPARATOR . $this->cssPathFileName ) ){
+			wp_enqueue_style( 'wpT2S-dyn-css',  plugin_dir_url( __FILE__ ) . "css" . DIRECTORY_SEPARATOR . $this->cssPathFileName, array(), uniqid() );
+		}
+
 	}
 
 	public function wpText2speech_options_enqueue_scripts(){
