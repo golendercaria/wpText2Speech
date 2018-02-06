@@ -17,9 +17,27 @@ class wpText2speech{
 
 		//ajax capture
 		add_action( 'wp_ajax_wpT2S', array( $this, 'ajax_wpT2S' ) );
-		add_action( 'wp_ajax_nopriv_wpT2S',array( $this,  'ajax_wpT2S' ) );
+		add_action( 'wp_ajax_nopriv_wpT2S', array( $this,  'ajax_wpT2S' ) );
 
+		//admin script
+		add_action('admin_enqueue_scripts', array( $this, 'wpText2speech_options_enqueue_scripts' ) );
+
+		//hook for save icon
+		//add_action('update_option', array( $this, 'wpText2speech_save_options' ), 10, 3 );
 	}
+
+	public function wpText2speech_save_options( $option, $old_value, $value ){
+		if( $option == "wpT2S_options" ){
+
+			echo "<pre>";
+			print_r($option);
+			print_r($old_value);
+			print_r($value);
+			echo "</pre>";
+			die();
+		}
+	}
+
 	
 	public function admin_menu_page(){
 		add_menu_page( $this->menuPageTitle, $this->menuPageLabel, 'manage_options', get_class($this), array($this,'wpText2speech_options_page'), 'dashicons-megaphone', 100 );
@@ -55,6 +73,18 @@ class wpText2speech{
         if( isset( $input['wpT2S_Selector'] ) )
             $new_input['wpT2S_Selector'] = sanitize_text_field( $input['wpT2S_Selector'] );
 
+		if( isset( $input['wpT2S_Icon_Base'] ) )
+			$new_input['wpT2S_Icon_Base'] = esc_url_raw( $input['wpT2S_Icon_Base'] );
+		
+		if( isset( $input['wpT2S_Icon_Loading'] ) )
+			$new_input['wpT2S_Icon_Loading'] = esc_url_raw( $input['wpT2S_Icon_Loading'] );
+
+		if( isset( $input['wpT2S_Icon_Play'] ) )
+			$new_input['wpT2S_Icon_Play'] = esc_url_raw( $input['wpT2S_Icon_Play'] );
+
+		if( isset( $input['wpT2S_Icon_Pause'] ) )
+			$new_input['wpT2S_Icon_Pause'] = esc_url_raw( $input['wpT2S_Icon_Pause'] );
+
         return $new_input;
     }
 
@@ -86,7 +116,39 @@ class wpText2speech{
             array( $this, 'field_content_class_selector' ), 
             get_class($this),
             'wpT2S_section'
-        );
+		);
+		
+        add_settings_field(
+            'wpT2S_Icon_Base', 
+            'Icon base', 
+            array( $this, 'field_icon_base' ), 
+            get_class($this),
+            'wpT2S_section'
+		);
+		
+        add_settings_field(
+            'wpT2S_Icon_Loading', 
+            'Icon loading', 
+            array( $this, 'field_icon_loading' ), 
+            get_class($this),
+            'wpT2S_section'
+		);
+		
+        add_settings_field(
+            'wpT2S_Icon_Play', 
+            'Icon play', 
+            array( $this, 'field_icon_play' ), 
+            get_class($this),
+            'wpT2S_section'
+		);
+
+        add_settings_field(
+            'wpT2S_Icon_Pause', 
+            'Icon pause', 
+            array( $this, 'field_icon_pause' ), 
+            get_class($this),
+            'wpT2S_section'
+		);
 	}
 
     public function field_api_point(){
@@ -101,7 +163,39 @@ class wpText2speech{
             '<input type="text" id="wpT2S_Selector" name="wpT2S_options[wpT2S_Selector]" value="%s" />',
             isset( $this->options['wpT2S_Selector'] ) ? esc_attr( $this->options['wpT2S_Selector']) : ''
         );
-    }
+	}
+	
+	public function field_icon_base(){
+        printf(
+			'<input type="text" id="wpT2S_Icon_Base" name="wpT2S_options[wpT2S_Icon_Base]" value="%s" />
+			<input class="upload_icon_button" type="button" class="button" value="' . __( 'Upload Icon', 'wpT2S' ) . '" />',
+			isset( $this->options['wpT2S_Icon_Base'] ) ? esc_url( $this->options['wpT2S_Icon_Base'] ) : '' 
+		);
+	}
+
+	public function field_icon_loading(){
+        printf(
+			'<input type="text" id="wpT2S_Icon_Loading" name="wpT2S_options[wpT2S_Icon_Loading]" value="%s" />
+			<input class="upload_icon_button" type="button" class="button" value="' . __( 'Upload Icon', 'wpT2S' ) . '" />',
+			isset( $this->options['wpT2S_Icon_Loading'] ) ? esc_url( $this->options['wpT2S_Icon_Loading'] ) : '' 
+		);
+	}
+
+	public function field_icon_play(){
+        printf(
+			'<input type="text" id="wpT2S_Icon_Play" name="wpT2S_options[wpT2S_Icon_Play]" value="%s" />
+			<input class="upload_icon_button" type="button" class="button" value="' . __( 'Upload Icon', 'wpT2S' ) . '" />',
+			isset( $this->options['wpT2S_Icon_Play'] ) ? esc_url( $this->options['wpT2S_Icon_Play'] ) : '' 
+		);
+	}
+
+	public function field_icon_pause(){
+        printf(
+			'<input type="text" id="wpT2S_Icon_Pause" name="wpT2S_options[wpT2S_Icon_Pause]" value="%s" />
+			<input class="upload_icon_button" type="button" class="button" value="' . __( 'Upload Icon', 'wpT2S' ) . '" />',
+			isset( $this->options['wpT2S_Icon_Pause'] ) ? esc_url( $this->options['wpT2S_Icon_Pause'] ) : '' 
+		);
+	}
 
 	public function wpText2speech_script(){
 		
@@ -113,6 +207,17 @@ class wpText2speech{
 		wp_localize_script( 'wpT2S-js', 'wpT2S_content_class_selector', $options['wpT2S_Selector']);
 		wp_enqueue_script( 'wpT2S-js' );
 
+	}
+
+	public function wpText2speech_options_enqueue_scripts(){
+		wp_enqueue_script('jquery');
+		wp_enqueue_script('thickbox');
+        wp_enqueue_style('thickbox');
+		wp_enqueue_script('media-upload');
+		
+		//custom admin script
+		wp_register_script( 'wpT2S-admin-js', plugin_dir_url( __FILE__ ) . '/admin-js/wpT2SAdmin.js', array('jquery'), "0.1", true);	
+		wp_enqueue_script( 'wpT2S-admin-js' );
 	}
 
 	public function ajax_wpT2S() {
