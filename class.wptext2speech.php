@@ -289,11 +289,32 @@ class wpText2speech{
 			}else{
 				
 				//lang
-				$lang = "fr-FR";
+				if( isset($_POST["lang"]) ){
+					
+					if( $_POST["lang"] == "fr" ){
+						$voice = "fr-FR_ReneeVoice";
+					}elseif( $_POST["lang"] == "en" ){
+						$voice = "en-US_LisaVoice";
+					}elseif( $_POST["lang"] == "de" ){
+						$voice = "de-DE_BirgitVoice";
+					}elseif( $_POST["lang"] == "pt" ){
+						$voice = "pt-BR_IsabelaVoice";
+					}
+				}else{
+					$voice = "fr-FR_ReneeVoice";
+				}
+				
 				//construct file
-				$url = $options["wpT2S_API_Point"] . "?accept=audio%2Fmp3&voice=" . $lang . "_ReneeVoice&text=" . $text;
-				//call mp3
-				$result = file_get_contents( $url );
+				$url = $options["wpT2S_API_Point"] . "?accept=audio%2Fmp3&voice=" . $voice . "&text=" . $text;
+				
+				//curl
+				$ch = curl_init();	
+			    curl_setopt($ch, CURLOPT_URL, $url);
+			    curl_setopt($ch, CURLOPT_HEADER, 0);
+			    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			    curl_setopt($ch, CURLOPT_TIMEOUT, 10000);
+			    $output = curl_exec($ch);
+			    curl_close($ch);
 
 				//check dir adn try to create dir
 				try{
@@ -303,7 +324,7 @@ class wpText2speech{
 				}
 
 				//write file
-				if( file_put_contents($pathFile, $result) ){
+				if( file_put_contents($pathFile, $output) ){
 					wp_send_json( array( "url" => get_template_directory_uri() . DIRECTORY_SEPARATOR . $this->folderName . DIRECTORY_SEPARATOR . $fileName ) );
 				}else{
 					wp_send_json(__("text2speech_error_writing_file","wpT2S"));
