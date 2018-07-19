@@ -35,35 +35,36 @@ if (isSafari == false && ua.indexOf('safari') != -1) {
 			} else {
 
 				//request sound
-				$.ajax({
-					url: wpT2S_ajaxURL,
-					async: true,
-					method: "POST",
-					data: {
-						'action': 'wpT2S',
-						'text': $(this).closest("." + wpT2S_content_class_selector).text()
-					},
-					beforeSend:function(){
-						$(el).removeClass("wpT2S_Icon_Pause wpT2S_Icon_Play wpT2S_Icon_Base").addClass("wpT2S_Icon_Loading");
-					},
-					success: function (response) {
-						if (response.url != undefined && response.url != "") {
-
-							audio = new Audio( response.url );
-							audio.controls = false;
+				if( !$(el).hasClass("loading") ){
+					$.ajax({
+						url: wpT2S_ajaxURL,
+						async: true,
+						method: "POST",
+						data: {
+							'action': 'wpT2S',
+							'text': $(this).closest("." + wpT2S_content_class_selector).text()
+						},
+						beforeSend:function(){
+							$(el).removeClass("wpT2S_Icon_Pause wpT2S_Icon_Play wpT2S_Icon_Base").addClass("wpT2S_Icon_Loading");
+						},
+						success: function (response) {
+							if (response.url != undefined && response.url != "") {
 	
-							if( isSafari ){
-								audio.pause();
-								$(el).removeClass("wpT2S_Icon_Base").addClass("wpT2S_Icon_Play");
-							}else{
-								audio.play();
-								$(el).removeClass("wpT2S_Icon_Base").addClass("wpT2S_Icon_Pause");
+								audio = new Audio( response.url );
+								audio.controls = false;
+		
+								if( isSafari ){
+									audio.pause();
+									$(el).removeClass("wpT2S_Icon_Base").addClass("wpT2S_Icon_Play");
+								}else{
+									audio.play();
+									$(el).removeClass("wpT2S_Icon_Base").addClass("wpT2S_Icon_Pause");
+								}
+	
 							}
-
 						}
-					}
-				});
-			
+					});
+				}
 			}
 
 			if( action == "pause"){
