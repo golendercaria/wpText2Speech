@@ -51,6 +51,7 @@ You need to take the option "class selector" configure in the Wordpress plugin a
 
 ```html
 <div class="t2s_section">
-   <h2>Songoku<span class="icon"></span></h2>
+   <h2>Songoku</h2>
+   blabla...
 </div>
 ```
